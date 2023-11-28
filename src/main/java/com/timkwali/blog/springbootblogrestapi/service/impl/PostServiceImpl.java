@@ -1,6 +1,7 @@
 package com.timkwali.blog.springbootblogrestapi.service.impl;
 
 import com.timkwali.blog.springbootblogrestapi.entity.Post;
+import com.timkwali.blog.springbootblogrestapi.exception.ResourceNotFound;
 import com.timkwali.blog.springbootblogrestapi.payload.PostDto;
 import com.timkwali.blog.springbootblogrestapi.repository.PostRepository;
 import com.timkwali.blog.springbootblogrestapi.service.PostService;
@@ -34,6 +35,31 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllPosts() {
         List<Post> allPosts = postRepository.findAll();
         return allPosts.stream().map(post -> mapToDto(post)).collect(Collectors.toList());
+    }
+
+    @Override
+    public PostDto getPostById(long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Post", "id", id));
+        return mapToDto(post);
+    }
+
+    @Override
+    public PostDto updatePost(PostDto postDto, long id) {
+        //get post by id from database
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Post", "id", id));
+
+        //update post
+        post.setTitle(postDto.getTitle());
+        post.setDescription(postDto.getDescription());
+        post.setContent(postDto.getContent());
+
+        //replace updated post in database
+        Post updatedPost = postRepository.save(post);
+
+        //return updated PostDto
+        return mapToDto(updatedPost);
     }
 
     //Convert entity to DTO
