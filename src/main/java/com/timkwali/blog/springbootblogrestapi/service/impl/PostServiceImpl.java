@@ -3,8 +3,12 @@ package com.timkwali.blog.springbootblogrestapi.service.impl;
 import com.timkwali.blog.springbootblogrestapi.entity.Post;
 import com.timkwali.blog.springbootblogrestapi.exception.ResourceNotFound;
 import com.timkwali.blog.springbootblogrestapi.payload.PostDto;
+import com.timkwali.blog.springbootblogrestapi.payload.PostResponse;
 import com.timkwali.blog.springbootblogrestapi.repository.PostRepository;
 import com.timkwali.blog.springbootblogrestapi.service.PostService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,9 +36,25 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getAllPosts() {
-        List<Post> allPosts = postRepository.findAll();
-        return allPosts.stream().map(post -> mapToDto(post)).collect(Collectors.toList());
+    public PostResponse getAllPosts(int pageNo, int pageSize) {
+        //create pageable instance
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<Post> allPosts = postRepository.findAll(pageable);
+
+        //get content from page object
+        List<Post> postsList = allPosts.getContent();
+
+        List<PostDto> content = postsList.stream().map(post -> mapToDto(post)).collect(Collectors.toList());
+       
+        PostResponse postResponse = new PostResponse();
+        postResponse.setContent(content);
+        postResponse.setPageNo(allPosts.getNumber());
+        postResponse.setPageSize(allPosts.getSize());
+        postResponse.setTotalElements(allPosts.getTotalElements());
+        postResponse.setTotalPages(allPosts.getTotalPages());
+        postResponse.setLast(allPosts.isLast());
+
+        return postResponse;
     }
 
     @Override
@@ -60,6 +80,13 @@ public class PostServiceImpl implements PostService {
 
         //return updated PostDto
         return mapToDto(updatedPost);
+    }
+
+    @Override
+    public void deletePostById (long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Post", "id", id));
+        postRepository.delete(post);
     }
 
     //Convert entity to DTO
