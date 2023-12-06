@@ -1,7 +1,7 @@
 package com.timkwali.blog.springbootblogrestapi.service.impl;
 
 import com.timkwali.blog.springbootblogrestapi.entity.Post;
-import com.timkwali.blog.springbootblogrestapi.exception.ResourceNotFound;
+import com.timkwali.blog.springbootblogrestapi.exception.ResourceNotFoundException;
 import com.timkwali.blog.springbootblogrestapi.payload.PostDto;
 import com.timkwali.blog.springbootblogrestapi.payload.PostResponse;
 import com.timkwali.blog.springbootblogrestapi.repository.PostRepository;
@@ -66,7 +66,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostDto getPostById(long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Post", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Post", "id", id));
         return mapToDto(post);
     }
 
@@ -74,7 +74,7 @@ public class PostServiceImpl implements PostService {
     public PostDto updatePost(PostDto postDto, long id) {
         //get post by id from database
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Post", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Post", "id", id));
 
         //update post
         post.setTitle(postDto.getTitle());
@@ -91,7 +91,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void deletePostById (long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Post", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Post", "id", id));
         postRepository.delete(post);
     }
 
